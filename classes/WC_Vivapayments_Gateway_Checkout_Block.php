@@ -12,11 +12,12 @@ if ( class_exists( '\Automattic\WooCommerce\Blocks\Payments\Integrations\Abstrac
         protected $name = 'papaki_vivapayments_gateway';
 
         public function initialize() {
-            $this->gateway = new WC_Papaki_Vivapayments_Gateway();
+            $gateways      = WC()->payment_gateways()->payment_gateways();
+            $this->gateway = isset( $gateways[ $this->name ] ) ? $gateways[ $this->name ] : null;
         }
 
         public function is_active() {
-            return $this->gateway->is_available();
+            return $this->gateway instanceof \WC_Payment_Gateway && $this->gateway->is_available();
         }
 
         public function get_payment_method_script_handles() {
@@ -24,7 +25,7 @@ if ( class_exists( '\Automattic\WooCommerce\Blocks\Payments\Integrations\Abstrac
 
             wp_register_script(
                 $handle,
-                plugin_dir_url( __FILE__ ) . '../assets/js/blocks/checkout.js',
+                plugins_url( 'assets/js/blocks/checkout.js', dirname( __FILE__ ) ),
                 [
                     'wc-blocks-registry',
                     'wc-settings',
@@ -37,8 +38,7 @@ if ( class_exists( '\Automattic\WooCommerce\Blocks\Payments\Integrations\Abstrac
             );
 
             if ( function_exists( 'wp_set_script_translations' ) ) {
-                wp_set_script_translations( $handle, Application::TEXT_DOMAIN, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
-
+                wp_set_script_translations( $handle, Application::TEXT_DOMAIN, dirname( __DIR__ ) . '/languages' );
             }
             return [ $handle ];
         }

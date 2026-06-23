@@ -507,6 +507,12 @@ class WC_Papaki_Vivapayments_Gateway extends \WC_Payment_Gateway {
 
                 $order = $wpdb->get_results( $orderquery );
 
+                if ( empty( $order ) || ! isset( $order[0]->orderid ) ) {
+                    // No local transaction maps to this Viva order code — nothing to update; bail to a safe return URL.
+                    wp_safe_redirect( $this->get_return_url() );
+                    exit;
+                }
+
                 $orderid = sanitize_text_field( $order[0]->orderid );
                 $order   = new \WC_Order( $orderid );
 
@@ -634,7 +640,13 @@ class WC_Papaki_Vivapayments_Gateway extends \WC_Payment_Gateway {
 
                     $tm_ref = sanitize_text_field( $_GET['s'] );
 
-                    $check_query       = $wpdb->get_results( "SELECT orderid FROM {$wpdb->prefix}viva_payment_transactions WHERE trans_code = '" . addslashes( $tm_ref ) . "'", ARRAY_A );
+                    $check_query       = $wpdb->get_results(
+                        $wpdb->prepare(
+                            "SELECT orderid FROM {$wpdb->prefix}viva_payment_transactions WHERE trans_code = %s",
+                            $tm_ref
+                        ),
+                        ARRAY_A
+                    );
                     $check_query_count = count( $check_query );
 
                     if ( $check_query_count >= 1 ) {

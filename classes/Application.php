@@ -34,10 +34,8 @@ class Application {
     }
 
     public function declare_transactions() {
-        global $wpdb;
-
-        if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class) ) {
-            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( $wpdb->prefix . 'viva_payment_transactions', $this->entrypoint_path, true );
+        if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', $this->entrypoint_path, true );
         }
     }
 
@@ -99,7 +97,8 @@ class Application {
         }
 
         if ( $file == $this_plugin ) {
-            $settings_link = '<a href="' . get_bloginfo( 'wpurl' ) . '/wp-admin/admin.php?page=wc-settings&tab=checkout&section=WC_Papaki_Vivapayments_Gateway">Settings</a>';
+            $settings_url  = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=papaki_vivapayments_gateway' );
+            $settings_link = '<a href="' . esc_url( $settings_url ) . '">' . esc_html__( 'Settings', static::TEXT_DOMAIN ) . '</a>';
             array_unshift( $links, $settings_link );
         }
         return $links;
